@@ -18,7 +18,11 @@ class Bot(Base):
         default="",
         server_default="",
     )
-    bot_link: Mapped[str] = mapped_column(String(255))
+    bot_link: Mapped[str] = mapped_column(
+        String(255),
+        default="",
+        server_default="",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
