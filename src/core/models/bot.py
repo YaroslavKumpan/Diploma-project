@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Float, String, Text
+from sqlalchemy import Float, String, Text, DateTime
 
 from .base import Base
 
@@ -16,9 +18,20 @@ class Bot(Base):
         default="",
         server_default="",
     )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        server_default=None,
+    )
     version: Mapped[str] = mapped_column(String(20), unique=False)
     update_description: Mapped[str] = mapped_column(
         Text,
         default="",
         server_default="",
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=None,
     )
