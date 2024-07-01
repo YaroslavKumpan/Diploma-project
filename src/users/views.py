@@ -1,20 +1,37 @@
-from typing import Annotated
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
-from fastapi import APIRouter, Path
+from core.models import db_helper
+from . import crud
+from .schemas import User, UserCreate
+from .dependencies import user_by_id
 
-from src.users import crud
-from src.users.schemas import CreateUser
-
-router = APIRouter(prefix="/users")
-
-
-@router.post("/create_user/")
-def create_user(user: CreateUser):
-    return crud.create_user(user_in=user)
+router = APIRouter(tags=["Users"])
 
 
-@router.get("/{user_id}")
-def get_user_id_from_db(user_id: Annotated[int, Path(ge=1, lt=1_000_000)]):
-    return {
-        "user_id": user_id,
-    }
+# получение списка пользователей
+@router.get("/", response_model=list[User])
+async def get_users(
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.get_users(session=session)
+
+
+# создание нового пользователя
+@router.post(
+    "/",
+    response_model=User,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_user(
+    user_in: UserCreate,
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    return await crud.create_user(session=session, user_in=user_in)
+
+
+# получение пользователя по айди
+@router.get("/{user_id}/", response_model=User)
+async def get_user(user: User = Depends(user_by_id)):
+    return user
