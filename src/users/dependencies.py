@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import db_helper
 from src.users.models import User
 from . import crud
-from src.users.schemas import UserCreate
+from src.users.schemas import UserCreate, UserUpdate, UserUpdatePartial
 
 """
 user_by_id используется получения пользователя по айди, если пользователь не найде в БД, то райзится ошибка 404.
@@ -30,7 +30,7 @@ async def user_by_id(
 
 # Проверка на существование пользователя с таким же username
 async def check_username(
-    user_in: UserCreate,
+    user_in: UserCreate | UserUpdate | UserUpdatePartial,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ) -> None:
     stmt = select(User).where(User.username == user_in.username)
@@ -42,7 +42,7 @@ async def check_username(
 
 # Проверка на существование пользователя с таким же email
 async def check_email(
-    user_in: UserCreate,
+    user_in: UserCreate | UserUpdate | UserUpdatePartial,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ) -> None:
     stmt = select(User).where(User.email == user_in.email)
