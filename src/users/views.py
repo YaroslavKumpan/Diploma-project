@@ -5,7 +5,7 @@ from starlette import status
 from core.models import db_helper
 from . import crud
 from .schemas import User, UserCreate
-from .dependencies import user_by_id
+from .dependencies import user_by_id, check_username, check_email
 
 router = APIRouter(tags=["Users"])
 
@@ -27,6 +27,8 @@ async def get_users(
 async def create_user(
     user_in: UserCreate,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    _check_username_dependency: None = Depends(check_username),
+    _check_email_dependency: None = Depends(check_email),
 ):
     return await crud.create_user(session=session, user_in=user_in)
 
