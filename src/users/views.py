@@ -4,13 +4,13 @@ from starlette import status
 
 from core.models import db_helper
 from . import crud
-from .schemas import User, UserCreate
+from .schemas import User, UserCreate, UserUpdate, UserUpdatePartial
 from .dependencies import user_by_id, check_username, check_email
 
 router = APIRouter(tags=["Users"])
 
 
-# получение списка пользователей
+#
 @router.get("/", response_model=list[User])
 async def get_users(
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
@@ -18,7 +18,6 @@ async def get_users(
     return await crud.get_users(session=session)
 
 
-# создание нового пользователя
 @router.post(
     "/",
     response_model=User,
@@ -27,13 +26,51 @@ async def get_users(
 async def create_user(
     user_in: UserCreate,
     session: AsyncSession = Depends(db_helper.scoped_session_dependency),
-    _check_username_dependency: None = Depends(check_username),
-    _check_email_dependency: None = Depends(check_email),
 ):
+    await check_username(user_in=user_in, session=session)
+    await check_email(user_in=user_in, session=session)
     return await crud.create_user(session=session, user_in=user_in)
 
 
-# получение пользователя по айди
 @router.get("/{user_id}/", response_model=User)
 async def get_user(user: User = Depends(user_by_id)):
     return user
+
+
+@router.put("/{user_id}/")
+async def update_user(
+    user_update: UserUpdate,
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    await check_username(user_in=user_update, session=session)
+    await check_email(user_in=user_update, session=session)
+    return await crud.update_user(
+        session=session,
+        user=user,
+        user_update=user_update,
+    )
+
+
+@router.patch("/{user_id}/")
+async def update_user_partial(
+    user_update: UserUpdatePartial,
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
+    await check_username(user_in=user_update, session=session)
+    await check_email(user_in=user_update, session=session)
+    return await crud.update_user(
+        session=session,
+        user=user,
+        user_update=user_update,
+        partial=True,
+    )
+
+
+@router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+) -> None:
+    await crud.delete_user(session=session, user=user)
