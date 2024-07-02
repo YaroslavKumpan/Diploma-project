@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy import String, func, DateTime
+from sqlalchemy.orm import relationship, mapped_column, Mapped
 from core.models.base import Base
 
 
 class User(Base):
+    __tablename__ = "users"
 
     username: Mapped[str] = mapped_column(String(100), unique=True)
     email: Mapped[str] = mapped_column(String, unique=True)
@@ -21,3 +21,5 @@ class User(Base):
         default=datetime.now,
         onupdate=datetime.now,
     )
+
+    products = relationship("Product", back_populates="user")

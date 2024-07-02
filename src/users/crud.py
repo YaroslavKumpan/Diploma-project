@@ -26,10 +26,10 @@ async def create_user(session: AsyncSession, user_in: UserCreate) -> User:
 
 
 async def update_user(
-    session: AsyncSession,
-    user: User,
-    user_update: UserUpdate | UserUpdatePartial,
-    partial: bool = False,
+        session: AsyncSession,
+        user: User,
+        user_update: UserUpdate | UserUpdatePartial,
+        partial: bool = False,
 ) -> User:
     for name, value in user_update.model_dump(exclude_unset=partial).items():
         setattr(user, name, value)
@@ -38,8 +38,8 @@ async def update_user(
 
 
 async def delete_user(
-    session: AsyncSession,
-    user: User,
+        session: AsyncSession,
+        user: User,
 ) -> None:
     await session.delete(user)
     await session.commit()

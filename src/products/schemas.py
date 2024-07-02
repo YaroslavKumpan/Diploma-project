@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+
+from pydantic import ConfigDict, BaseModel
 
 
 class ProductBase(BaseModel):
@@ -8,7 +10,7 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
-    pass
+    user_id: int
 
 
 class ProductUpdate(ProductCreate):
@@ -24,3 +26,5 @@ class ProductUpdatePartial(ProductCreate):
 class Product(ProductBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    created_at: datetime
+    user_id: int

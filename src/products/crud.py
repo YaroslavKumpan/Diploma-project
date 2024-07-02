@@ -24,10 +24,10 @@ async def get_product(session: AsyncSession, product_id: int) -> Product | None:
 
 
 async def create_product(session: AsyncSession, product_in: ProductCreate) -> Product:
-    product = Product(**product_in.model_dump())
+    product = Product(**product_in.dict())
     session.add(product)
     await session.commit()
-    # await session.refresh(product)
+    await session.refresh(product)
     return product
 
 
