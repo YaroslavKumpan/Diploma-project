@@ -26,6 +26,6 @@ class UserUpdate(UserCreate):
 
 
 class UserUpdatePartial(UserCreate):
-    username: Annotated[str, MinLen(3), MaxLen(20)]
-    email: EmailStr
-    hashed_password: Annotated[str, MinLen(8), MaxLen(40)]
+    username: Annotated[str, MinLen(3), MaxLen(20)] | None = None
+    email: EmailStr | None = None
+    hashed_password: Annotated[str, MinLen(8), MaxLen(40)] | None = None
