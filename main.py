@@ -5,9 +5,8 @@ from fastapi import FastAPI
 
 from core.config import settings
 from core.models import Base, db_helper
-from src import router as products_router
-from src import router as users_router
-
+from src.products.views import router as products_router
+from src.users.views import router as users_router
 
 
 @asynccontextmanager
@@ -19,9 +18,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(router=products_router)
-app.include_router(users_router)
-
+app.include_router(router=products_router, prefix="/products", tags=["Products"])
+app.include_router(router=users_router, prefix="/users", tags=["Users"])
 
 
 if __name__ == "__main__":
