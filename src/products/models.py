@@ -4,7 +4,6 @@ from core.models.base import Base
 
 
 class Product(Base):
-    ___tablename__ = "products"
 
     name: Mapped[str]
     description: Mapped[str]
