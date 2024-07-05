@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Product
+from .models import Product
 from .schemas import ProductCreate, ProductUpdate, ProductUpdatePartial
 
 

@@ -3,8 +3,10 @@ from typing import Annotated
 from fastapi import Path, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import db_helper, Product
+from core.models import db_helper
 from . import crud
+
+from .models import Product
 
 
 async def product_by_id(
