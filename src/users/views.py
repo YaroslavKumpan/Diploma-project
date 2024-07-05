@@ -13,7 +13,7 @@ router = APIRouter(tags=["Users"])
 #
 @router.get("/", response_model=list[User], operation_id="get_all_users")
 async def get_users(
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     return await crud.get_users(session=session)
 
@@ -25,8 +25,8 @@ async def get_users(
     operation_id="create_new_user",
 )
 async def create_user(
-        user_in: UserCreate,
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    user_in: UserCreate,
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     await check_username(user_in=user_in, session=session)
     await check_email(user_in=user_in, session=session)
@@ -40,9 +40,9 @@ async def get_user(user: User = Depends(user_by_id)):
 
 @router.put("/{user_id}/", operation_id="update_existing_user")
 async def update_user(
-        user_update: UserUpdate,
-        user: User = Depends(user_by_id),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    user_update: UserUpdate,
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     await check_username(user_in=user_update, session=session)
     await check_email(user_in=user_update, session=session)
@@ -55,9 +55,9 @@ async def update_user(
 
 @router.patch("/{user_id}/", operation_id="partially_update_user")
 async def update_user_partial(
-        user_update: UserUpdatePartial,
-        user: User = Depends(user_by_id),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    user_update: UserUpdatePartial,
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ):
     await check_username(user_in=user_update, session=session)
     await check_email(user_in=user_update, session=session)
@@ -75,7 +75,7 @@ async def update_user_partial(
     operation_id="remove_user",
 )
 async def delete_user(
-        user: User = Depends(user_by_id),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+    user: User = Depends(user_by_id),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
 ) -> None:
     await crud.delete_user(session=session, user=user)

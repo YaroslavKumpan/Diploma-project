@@ -11,10 +11,9 @@ from src.users.views import router as users_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with db_helper.engine.begin() as conn:
+        # Создаём все таблицы
         await conn.run_sync(Base.metadata.create_all)
-
     yield
-
 
 
 app = FastAPI(
@@ -23,9 +22,9 @@ app = FastAPI(
     version="1.0.0",
     openapi_tags=[
         {"name": "Products", "description": "Operations with products"},
-        {"name": "Users", "description": "Operations with users"}
+        {"name": "Users", "description": "Operations with users"},
     ],
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
