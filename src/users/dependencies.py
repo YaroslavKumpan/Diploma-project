@@ -37,7 +37,7 @@ async def check_username(
     result = await session.execute(stmt)
     existing_user = result.scalar_one_or_none()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
+        raise HTTPException(status_code=422, detail="Username already registered")
 
 
 # Проверка на существование пользователя с таким же email
@@ -49,4 +49,4 @@ async def check_email(
     result = await session.execute(stmt)
     existing_user = result.scalar_one_or_none()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=422, detail="Email already registered")
