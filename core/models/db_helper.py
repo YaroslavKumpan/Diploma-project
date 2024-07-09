@@ -1,16 +1,21 @@
 from asyncio import current_task
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, async_scoped_session, AsyncSession
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    async_sessionmaker,
+    async_scoped_session,
+    AsyncSession,
+)
 
 from core.config import settings
 
 
-# Движок и фабрика для сессий
+# Класс помощник для работы с базой данных
 class DatabaseHelper:
     def __init__(self, url: str, echo: bool = False):
         self.engine = create_async_engine(
-            url=settings.db_url,
-            echo=settings.db_echo,
+            url=url,
+            echo=echo,
         )
         self.session_factory = async_sessionmaker(
             bind=self.engine,
@@ -19,6 +24,7 @@ class DatabaseHelper:
             expire_on_commit=False,
         )
 
+    # Используется для того, чтобы одна и та же сессия могла быть использована в рамках одной асинхронной задачи.
     def get_scoped_session(self):
         session = async_scoped_session(
             session_factory=self.session_factory,
@@ -29,17 +35,27 @@ class DatabaseHelper:
     # создание сессии каждый раз, при новом обращении в views инициализируем новую сессию
     async def session_dependency(self) -> AsyncSession:
         async with self.session_factory() as session:
-            yield session
-            await session.close()
+            try:
+                yield session
+            finally:
+                await session.close()
 
     # или когда мы работаем с одной scoped session
     async def scoped_session_dependency(self) -> AsyncSession:
         session = self.get_scoped_session()
-        yield session
-        await session.close()
+        try:
+            yield session
+        finally:
+            await session.close()
 
 
+# Инициализация основной бд
 db_helper = DatabaseHelper(
     url=settings.db_url,
+    echo=settings.db_echo,
+)
+# Инициализация тестовой бд
+test_db_helper = DatabaseHelper(
+    url=settings.test_db_url,
     echo=settings.db_echo,
 )
