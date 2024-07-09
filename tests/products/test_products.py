@@ -5,7 +5,7 @@ class TestProductCRUD(BaseTest):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        # Создаем пользователя с id=1
+        # Создаем пользователя с id=1 для тестов
         response = client.post(
             "/users/",
             json={
@@ -18,6 +18,7 @@ class TestProductCRUD(BaseTest):
         self.user_id = response.json()["id"]
 
     def test_create_product(self):
+        # Проверяем успешное создание нового продукта
         response = client.post(
             "/products/",
             json={
@@ -35,6 +36,7 @@ class TestProductCRUD(BaseTest):
         self.assertEqual(data["user_id"], self.user_id)
 
     def test_read_product(self):
+        # Проверяем возможность чтения данных продукта
         response = client.post(
             "/products/",
             json={
@@ -56,6 +58,7 @@ class TestProductCRUD(BaseTest):
         self.assertEqual(data["user_id"], self.user_id)
 
     def test_update_product(self):
+        # Проверяем возможность обновления данных продукта
         response = client.post(
             "/products/",
             json={
@@ -74,7 +77,7 @@ class TestProductCRUD(BaseTest):
                 "name": "Updated Product",
                 "description": "Updated description.",
                 "price": 250,
-                "user_id": self.user_id  # Обязательно добавьте user_id при обновлении
+                "user_id": self.user_id
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -84,6 +87,7 @@ class TestProductCRUD(BaseTest):
         self.assertEqual(data["price"], 250)
 
     def test_delete_product(self):
+        # Проверяем возможность удаления продукта
         response = client.post(
             "/products/",
             json={

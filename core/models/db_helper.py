@@ -49,7 +49,7 @@ class DatabaseHelper:
             await session.close()
 
 
-# Инициализация основной базы данных
+# Инициализация основной бд
 db_helper = DatabaseHelper(
     url=settings.db_url,
     echo=settings.db_echo,
