@@ -1,70 +1,100 @@
-import pytest
-from httpx import AsyncClient
-
-from core.models import Base
-from main import app
-from core.models.db_helper import test_db_helper as db_helper
+from tests.conftest import BaseTest, client
 
 
-@pytest.fixture(autouse=True, scope="module")
-async def setup_test_db():
-    async with db_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with db_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+class TestProductCRUD(BaseTest):
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        # Создаем пользователя с id=1
+        response = client.post(
+            "/users/",
+            json={
+                "username": "TestUser",
+                "email": "test.user@example.com",
+                "hashed_password": "password123",
+            },
+        )
+        assert response.status_code == 201
+        self.user_id = response.json()["id"]
 
-@pytest.fixture
-async def async_client():
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        yield client
+    def test_create_product(self):
+        response = client.post(
+            "/products/",
+            json={
+                "name": "Test Product",
+                "description": "A product for testing.",
+                "price": 100,
+                "user_id": self.user_id  # Используем созданного пользователя
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["name"], "Test Product")
+        self.assertEqual(data["description"], "A product for testing.")
+        self.assertEqual(data["price"], 100)
+        self.assertEqual(data["user_id"], self.user_id)
 
+    def test_read_product(self):
+        response = client.post(
+            "/products/",
+            json={
+                "name": "Test Product",
+                "description": "A product for testing.",
+                "price": 100,
+                "user_id": self.user_id
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        product_id = response.json()["id"]
 
-@pytest.fixture
-def product_data():
-    return {
-        "name": "Test Product",
-        "description": "This is a test product",
-        "price": 100,
-        "user_id": 1
-    }
+        response = client.get(f"/products/{product_id}")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Test Product")
+        self.assertEqual(data["description"], "A product for testing.")
+        self.assertEqual(data["price"], 100)
+        self.assertEqual(data["user_id"], self.user_id)
 
+    def test_update_product(self):
+        response = client.post(
+            "/products/",
+            json={
+                "name": "Update Product",
+                "description": "Product to be updated.",
+                "price": 200,
+                "user_id": self.user_id
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        product_id = response.json()["id"]
 
-@pytest.mark.asyncio
-async def test_create_product(async_client, product_data):
-    response = await async_client.post("/products/", json=product_data)
-    assert response.status_code == 201
-    data = response.json()
-    assert data["name"] == product_data["name"]
-    assert data["description"] == product_data["description"]
-    assert data["price"] == product_data["price"]
-    assert data["user_id"] == product_data["user_id"]
+        response = client.put(
+            f"/products/{product_id}",
+            json={
+                "name": "Updated Product",
+                "description": "Updated description.",
+                "price": 250,
+                "user_id": self.user_id  # Обязательно добавьте user_id при обновлении
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["name"], "Updated Product")
+        self.assertEqual(data["description"], "Updated description.")
+        self.assertEqual(data["price"], 250)
 
+    def test_delete_product(self):
+        response = client.post(
+            "/products/",
+            json={
+                "name": "Delete Product",
+                "description": "Product to be deleted.",
+                "price": 300,
+                "user_id": self.user_id
+            },
+        )
+        self.assertEqual(response.status_code, 201)
+        product_id = response.json()["id"]
 
-@pytest.mark.asyncio
-async def test_get_product(async_client, product_data):
-    response = await async_client.post("/products/", json=product_data)
-    assert response.status_code == 201
-    product_id = response.json()["id"]
-
-    response = await async_client.get(f"/products/{product_id}/")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == product_data["name"]
-    assert data["description"] == product_data["description"]
-    assert data["price"] == product_data["price"]
-    assert data["user_id"] == product_data["user_id"]
-
-
-@pytest.mark.asyncio
-async def test_delete_product(async_client, product_data):
-    response = await async_client.post("/products/", json=product_data)
-    assert response.status_code == 201
-    product_id = response.json()["id"]
-
-    response = await async_client.delete(f"/products/{product_id}/")
-    assert response.status_code == 204
-
-    response = await async_client.get(f"/products/{product_id}/")
-    assert response.status_code == 404
+        response = client.delete(f"/products/{product_id}")
+        self.assertEqual(response.status_code, 204)

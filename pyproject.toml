@@ -35,5 +35,9 @@ aiosqlite = "^0.20.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+addopts = "--maxfail=1 --disable-warnings -q"
+asyncio_mode = "auto"
+
 [tool.poetry.scripts]
 start = "main:app"
