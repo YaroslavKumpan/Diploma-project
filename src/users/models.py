@@ -1,9 +1,12 @@
 from datetime import datetime
-
+from typing import TYPE_CHECKING
 from sqlalchemy import DateTime, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.models.base import Base
+
+if TYPE_CHECKING:
+    from src.products.models import Product
 
 
 class User(Base):
@@ -21,3 +24,4 @@ class User(Base):
         default=datetime.now,
         onupdate=datetime.now,
     )
+    products: Mapped[list["Product"]] = relationship(back_populates="user")

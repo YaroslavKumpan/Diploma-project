@@ -1,14 +1,16 @@
 """
-Create
-Read
-Update
-Delete
+В этом файле реализованы основные операции CRUD для модели `Product`:
+Create (Создание)
+Read (Чтение)
+Update (Обновление)
+Delete (Удаление)
 """
+
 from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Product
+from .models import Product
 from .schemas import ProductCreate, ProductUpdate, ProductUpdatePartial
 
 
@@ -24,18 +26,18 @@ async def get_product(session: AsyncSession, product_id: int) -> Product | None:
 
 
 async def create_product(session: AsyncSession, product_in: ProductCreate) -> Product:
-    product = Product(**product_in.model_dump())
+    product = Product(**product_in.dict())
     session.add(product)
     await session.commit()
-    # await session.refresh(product)
+    await session.refresh(product)
     return product
 
 
 async def update_product(
-        session: AsyncSession,
-        product: Product,
-        product_update: ProductUpdate | ProductUpdatePartial,
-        partial: bool = False,
+    session: AsyncSession,
+    product: Product,
+    product_update: ProductUpdate | ProductUpdatePartial,
+    partial: bool = False,
 ) -> Product:
     for name, value in product_update.model_dump(exclude_unset=partial).items():
         setattr(product, name, value)
@@ -44,8 +46,8 @@ async def update_product(
 
 
 async def delete_product(
-        session: AsyncSession,
-        product: Product,
+    session: AsyncSession,
+    product: Product,
 ) -> None:
     await session.delete(product)
     await session.commit()
