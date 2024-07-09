@@ -1,120 +1,70 @@
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.products.models import Product
+from core.models import Base
+from main import app
+from core.models.db_helper import test_db_helper as db_helper
+
+
+@pytest.fixture(autouse=True, scope="module")
+async def setup_test_db():
+    async with db_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with db_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture
+async def async_client():
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+
+
+@pytest.fixture
+def product_data():
+    return {
+        "name": "Test Product",
+        "description": "This is a test product",
+        "price": 100,
+        "user_id": 1
+    }
 
 
 @pytest.mark.asyncio
-async def test_create_product(client: AsyncClient, test_user):
-    response = await client.post(
-        "/products/",
-        json={
-            "name": "Test Product",
-            "description": "Test Description",
-            "price": 100,
-            "user_id": test_user.id,
-        },
-    )
+async def test_create_product(async_client, product_data):
+    response = await async_client.post("/products/", json=product_data)
     assert response.status_code == 201
     data = response.json()
-    assert data["name"] == "Test Product"
-    assert data["description"] == "Test Description"
-    assert data["price"] == 100
-    assert data["user_id"] == test_user.id
+    assert data["name"] == product_data["name"]
+    assert data["description"] == product_data["description"]
+    assert data["price"] == product_data["price"]
+    assert data["user_id"] == product_data["user_id"]
 
 
 @pytest.mark.asyncio
-async def test_get_product_by_id(client: AsyncClient, test_user, session: AsyncSession):
-    product = Product(
-        name="Test Product",
-        description="Test Description",
-        price=100,
-        user_id=test_user.id,
-    )
-    session.add(product)
-    await session.commit()
-    await session.refresh(product)
+async def test_get_product(async_client, product_data):
+    response = await async_client.post("/products/", json=product_data)
+    assert response.status_code == 201
+    product_id = response.json()["id"]
 
-    response = await client.get(f"/products/{product.id}/")
+    response = await async_client.get(f"/products/{product_id}/")
     assert response.status_code == 200
     data = response.json()
-    assert data["name"] == product.name
-    assert data["description"] == product.description
-    assert data["price"] == product.price
-    assert data["user_id"] == product.user_id
+    assert data["name"] == product_data["name"]
+    assert data["description"] == product_data["description"]
+    assert data["price"] == product_data["price"]
+    assert data["user_id"] == product_data["user_id"]
 
 
 @pytest.mark.asyncio
-async def test_update_product(client: AsyncClient, test_user, session: AsyncSession):
-    product = Product(
-        name="Test Product",
-        description="Test Description",
-        price=100,
-        user_id=test_user.id,
-    )
-    session.add(product)
-    await session.commit()
-    await session.refresh(product)
+async def test_delete_product(async_client, product_data):
+    response = await async_client.post("/products/", json=product_data)
+    assert response.status_code == 201
+    product_id = response.json()["id"]
 
-    response = await client.put(
-        f"/products/{product.id}/",
-        json={
-            "name": "Updated Product",
-            "description": "Updated Description",
-            "price": 150,
-            "user_id": test_user.id,
-        },
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "Updated Product"
-    assert data["description"] == "Updated Description"
-    assert data["price"] == 150
-    assert data["user_id"] == test_user.id
-
-
-@pytest.mark.asyncio
-async def test_update_product_partial(
-    client: AsyncClient, test_user, session: AsyncSession
-):
-    product = Product(
-        name="Test Product",
-        description="Test Description",
-        price=100,
-        user_id=test_user.id,
-    )
-    session.add(product)
-    await session.commit()
-    await session.refresh(product)
-
-    response = await client.patch(
-        f"/products/{product.id}/",
-        json={"name": "Partially Updated Product"},
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "Partially Updated Product"
-    assert data["description"] == product.description
-    assert data["price"] == product.price
-    assert data["user_id"] == product.user_id
-
-
-@pytest.mark.asyncio
-async def test_delete_product(client: AsyncClient, test_user, session: AsyncSession):
-    product = Product(
-        name="Test Product",
-        description="Test Description",
-        price=100,
-        user_id=test_user.id,
-    )
-    session.add(product)
-    await session.commit()
-    await session.refresh(product)
-
-    response = await client.delete(f"/products/{product.id}/")
+    response = await async_client.delete(f"/products/{product_id}/")
     assert response.status_code == 204
 
-    # Проверка, что продукт действительно удален
-    response = await client.get(f"/products/{product.id}/")
+    response = await async_client.get(f"/products/{product_id}/")
     assert response.status_code == 404

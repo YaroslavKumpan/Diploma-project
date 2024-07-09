@@ -1,4 +1,4 @@
-from tests.base import BaseTest, client
+from tests.conftest import BaseTest, client
 
 
 class TestErrorHandling(BaseTest):

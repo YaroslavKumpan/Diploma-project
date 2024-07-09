@@ -1,8 +1,9 @@
 """
-Create
-Read
-Update
-Delete
+В этом файле реализованы основные операции CRUD для модели `Product`:
+Create (Создание)
+Read (Чтение)
+Update (Обновление)
+Delete (Удаление)
 """
 
 from sqlalchemy import select

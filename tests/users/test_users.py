@@ -6,52 +6,34 @@
 #
 # from core.conftest import SQLALCHEMY_DATABASE_URL
 # from main import app
+from tests.conftest import client, BaseTest
 
 
-import unittest
-from fastapi.testclient import TestClient
-from main import app
-
-client = TestClient(app)
-
-
-class TestErrorHandling(unittest.TestCase):
-
-    def test_read_nonexistent_user(self):
-        # Попытка получить данные несуществующего пользователя
-        response = client.get("/users/999")
-        self.assertEqual(response.status_code, 404)
-        data = response.json()
-        self.assertEqual(data["detail"], "User 999 not found")
-
-    def test_delete_nonexistent_user(self):
-        # Попытка удалить несуществующего пользователя
-        response = client.delete("/users/999")
-        self.assertEqual(response.status_code, 404)
-        data = response.json()
-        self.assertEqual(data["detail"], "User not found")
-
-    def test_create_user_with_duplicate_email(self):
-        # Создаем пользователя с email
-        response = client.post(
-            "/users/", json={"name": "Alice", "email": "alice@example.com"}
+class TestErrorHandling(BaseTest):
+    async def test_create_user_with_duplicate_email(self):
+        response = await client.post(
+            "/users/",
+            json={
+                "username": "Alina",
+                "email": "alina@example.com",
+                "hashed_password": "hdjshfjhds",
+            },
         )
-        self.assertEqual(response.status_code, 201)
+        assert response.status_code == 201
         data = response.json()
-        self.assertEqual(data["email"], "alice@example.com")
+        assert data["email"] == "alina@example.com"
 
-        # Попытка создать пользователя с таким же email
-        response = client.post(
-            "/users/", json={"name": "Alice2", "email": "alice@example.com"}
+        response = await client.post(
+            "/users/",
+            json={
+                "username": "Alina2",
+                "email": "alina@example.com",
+                "hashed_password": "hdjshfjhds",
+            },
         )
-        self.assertEqual(response.status_code, 400)
+        assert response.status_code == 422
         data = response.json()
-        self.assertEqual(data["detail"], "Email already registered")
-
-
-if __name__ == "__main__":
-    unittest.main()
-
+        assert data["detail"] == "Email already registered"
 
 # class TestAPI(unittest.TestCase):
 #

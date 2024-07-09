@@ -10,12 +10,12 @@ from sqlalchemy.ext.asyncio import (
 from core.config import settings
 
 
-# Движок и фабрика для сессий
+# Класс помощник для работы с базой данных
 class DatabaseHelper:
     def __init__(self, url: str, echo: bool = False):
         self.engine = create_async_engine(
-            url=settings.db_url,
-            echo=settings.db_echo,
+            url=url,
+            echo=echo,
         )
         self.session_factory = async_sessionmaker(
             bind=self.engine,
@@ -24,6 +24,7 @@ class DatabaseHelper:
             expire_on_commit=False,
         )
 
+    # Используется для того, чтобы одна и та же сессия могла быть использована в рамках одной асинхронной задачи.
     def get_scoped_session(self):
         session = async_scoped_session(
             session_factory=self.session_factory,
@@ -48,7 +49,13 @@ class DatabaseHelper:
             await session.close()
 
 
+# Инициализация основной базы данных
 db_helper = DatabaseHelper(
     url=settings.db_url,
+    echo=settings.db_echo,
+)
+# Инициализация тестовой бд
+test_db_helper = DatabaseHelper(
+    url=settings.test_db_url,
     echo=settings.db_echo,
 )
