@@ -1,5 +1,5 @@
 
-FROM python:3.12-slim
+FROM python:3.10-slim
 
 # Устанавливаем curl и poetry
 RUN apt-get update && apt-get install -y curl && \
