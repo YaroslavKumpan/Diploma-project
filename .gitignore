@@ -1,5 +1,31 @@
-.idea
-.venv
-__pacache__/
-test_db.sqlite3
-db.sqlite3
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# Виртуальные окружения
+venv/
+.env/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+
+# Файлы IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Установленные пакеты
+*.egg-info/
+dist/
+build/
+
+#bd
+*.sqlite3
