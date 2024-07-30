@@ -2,3 +2,4 @@
 .venv
 __pacache__/
 test_db.sqlite3
+db.sqlite3
